@@ -52,6 +52,12 @@
             opacity: 0.5;
             cursor: not-allowed;
         }
+        .form-input.read-only-display {
+            background-color: var(--bg-primary);
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: default;
+        }
         .form-checkbox:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -141,6 +147,30 @@
             color: var(--text-primary);
             font-weight: 500;
         }
+        /* Simple accordion toggle for fossil timings */
+        .accordion-toggle {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+            border-top: 1px solid var(--bg-tertiary);
+        }
+        .accordion-toggle:hover {
+            color: var(--text-primary);
+        }
+        .accordion-toggle svg {
+            transition: transform 0.2s;
+        }
+        .accordion-toggle[aria-expanded="true"] svg {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8">
@@ -157,191 +187,290 @@
             </div>
         </div>
 
-        <!-- Simple/Advanced Toggle -->
-        <div class="mb-4">
-            <div class="flex rounded-md shadow-sm">
-                <button id="simpleBtn" class="toggle-btn-active w-1/2 p-2 rounded-l-md focus:outline-none">Simple</button>
-                <button id="advancedBtn" class="toggle-btn-inactive w-1/2 p-2 rounded-r-md focus:outline-none">Advanced</button>
-            </div>
+        <!-- NEW: Simple/Advanced/Fossil Toggle -->
+        <div class="flex rounded-md shadow-sm mb-4">
+            <button id="simpleBtn" class="toggle-btn-active w-1/3 p-2 rounded-l-md focus:outline-none">Simple</button>
+            <button id="advancedBtn" class="toggle-btn-inactive w-1/3 p-2 focus:outline-none">Advanced</button>
+            <button id="fossilBtn" class="toggle-btn-inactive w-1/3 p-2 rounded-r-md focus:outline-none">Fossils (WIP)</button>
         </div>
 
-        <!-- Calculator Form -->
-        <div class="bg-secondary p-4 sm:p-6 rounded-lg shadow-lg mb-6">
-            
-            <!-- Core Options (Always Visible) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label for="shinyCharm" class="block text-sm label-text mb-1">Do you have the shiny charm? <span class="required-star">*</span></label>
-                    <select id="shinyCharm" class="form-select">
-                        <option value="yes">Yes (1/1024.38)</option>
-                        <option value="no">No (1/4096)</option>
+        <!-- NEW: Overworld Calculator (Simple/Advanced) -->
+        <div id="simpleAdvancedCalculator">
+            <!-- Calculator Form -->
+            <div class="bg-secondary p-4 sm:p-6 rounded-lg shadow-lg mb-6">
+                
+                <!-- Core Options (Always Visible) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="shinyCharm" class="block text-sm label-text mb-1">Do you have the shiny charm? <span class="required-star">*</span></label>
+                        <select id="shinyCharm" class="form-select">
+                            <option value="yes">Yes (1/1024.38)</option>
+                            <option value="no">No (1/4096)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="totalSpawns" class="block text-sm label-text mb-1">Total Pokémon per reset? <span class="required-star">*</span></label>
+                        <input type="number" id="totalSpawns" class="form-input" placeholder="e.g., 12">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="resetMethod" class="block text-sm label-text mb-1">Reset Method <span class="required-star">*</span></label>
+                    <select id="resetMethod" class="form-select mb-2">
+                        <option value="" selected disabled>Select reset method</option>
+                        <option value="bench">Bench (19s)</option>
+                        <option value="fasttravel">Fast Travel (5s)</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <div id="customResetTimeContainer" class="toggle-hidden">
+                        <label for="resetTime" class="block text-sm label-text mb-1">Custom Reset Time (seconds)? <span class="required-star">*</span></label>
+                        <input type="number" id="resetTime" class="form-input" placeholder="e.g., 5.5">
+                    </div>
+                </div>
+
+                <!-- AFK Hunt Toggle -->
+                <div class="mb-4">
+                    <label for="afkHunt" class="block text-sm label-text mb-1">Is this an AFK hunt? <span class="italic font-normal">(optional)</span></label>
+                    <select id="afkHunt" class="form-select">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
                     </select>
                 </div>
-                <div>
-                    <label for="totalSpawns" class="block text-sm label-text mb-1">Total Pokémon per reset? <span class="required-star">*</span></label>
-                    <input type="number" id="totalSpawns" class="form-input" placeholder="e.g., 12">
-                </div>
-            </div>
-            <div class="mb-4">
-                <label for="resetMethod" class="block text-sm label-text mb-1">Reset Method <span class="required-star">*</span></label>
-                <select id="resetMethod" class="form-select mb-2">
-                    <option value="" selected disabled>Select reset method</option>
-                    <option value="bench">Bench (19s)</option>
-                    <option value="fasttravel">Fast Travel (5s)</option>
-                    <option value="custom">Custom</option>
-                </select>
-                <div id="customResetTimeContainer" class="toggle-hidden">
-                    <label for="resetTime" class="block text-sm label-text mb-1">Custom Reset Time (seconds)? <span class="required-star">*</span></label>
-                    <input type="number" id="resetTime" class="form-input" placeholder="e.g., 5.5">
-                </div>
-            </div>
 
-            <!-- AFK Hunt Toggle -->
-            <div class="mb-4">
-                <label for="afkHunt" class="block text-sm label-text mb-1">Is this an AFK hunt? <span class="italic font-normal">(optional)</span></label>
-                <select id="afkHunt" class="form-select">
-                    <option value="no">No</option>
-                    <option value="yes">Yes</option>
-                </select>
-            </div>
-
-            <!-- Advanced Options (Toggled) -->
-            <div id="advancedOptions" class="toggle-hidden border-t border-gray-700 pt-6 mt-6">
-                
-                <!-- Specific Hunt -->
-                <h3 class="text-lg font-semibold text-white mb-3">Specific Pokémon Hunt (Optional)</h3>
-                <p class="text-base text-gray-400 mb-3">
-                    For specific Pokémon details, check Serebii <a href="https://www.serebii.net/pokearth/lumiosecity/" target="_blank" rel="noopener noreferrer" class="text-accent-primary hover:text-accent-secondary underline">here</a>.
-                </p>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="specificSpawns" class="block text-sm label-text mb-1">Specific spawners per reset?</label>
-                        <input type="number" id="specificSpawns" class="form-input" placeholder="e.g., 3">
-                    </div>
-                    <div>
-                        <label for="spawnPercentMethod" class="block text-sm label-text mb-1">Spawn Table %?</label>
-                        <select id="spawnPercentMethod" class="form-select mb-2">
-                            <option value="" selected disabled>Select spawn type</option>
-                            <option value="isolated">Isolated (100%)</option>
-                            <option value="custom">Custom %</option>
-                        </select>
-                        <div id="customSpawnPercentContainer" class="toggle-hidden">
-                            <label for="spawnPercent" class="block text-sm label-text mb-1">Custom Spawn %?</label>
-                            <input type="number" id="spawnPercent" class="form-input" placeholder="e.g., 15">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" id="dayNightLock" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
-                        <span class="label-text">Is this a Day/Night-locked spawn?</span>
-                    </label>
-                    <p class="text-xs text-gray-500 ml-7 mt-1">(Doubles Bench reset time for this specific calculation)</p>
-                </div>
-                
-                <div class="mb-4">
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" id="specificGender" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
-                        <span class="label-text">Specific Gender?</span>
-                    </label>
-                </div>
-                <div id="genderRateContainer" class="toggle-hidden mb-4 ml-7">
-                    <label for="genderRate" class="block text-sm label-text mb-1">Rate of Desired Gender (%)?</label>
-                    <input type="number" id="genderRate" class="form-input" value="50" placeholder="e.g., 50">
-                    <p class="text-xs text-gray-500 mt-1">e.g., 50% is Default. See Serebii to Double Check.</p>
-                </div>
-
-                <div class="mb-4">
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" id="includeRespawnTime" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
-                        <span class="label-text">Include "Wrong Shiny" Respawn Time?</span>
-                    </label>
-                    <p class="text-xs text-yellow-400 ml-7 mt-1">NOT Recommended for Total AFK Hunts</p>
-                    <p id="respawnHelper" class="text-xs text-gray-500 ml-7 mt-1 toggle-hidden">(Disabled: Hunt has no "wrong shiny" condition)</p>
-                </div>
-                <div id="respawnTimeContainer" class="toggle-hidden mb-4 ml-7">
-                    <label for="spawnerRespawnTime" class="block text-sm label-text mb-1">Spawner Respawn Time (seconds)?</label>
-                    <input type="number" id="spawnerRespawnTime" class="form-input" placeholder="e.g., 150">
-                    <p class="text-xs text-gray-500 mt-1">Assumes a 1-minute "clear time" to catch/defeat the wrong shiny.</p>
-                </div>
-
-                <!-- Alpha Hunt -->
-                <h3 class="text-lg font-semibold text-white mb-3 mt-6 pt-4 border-t border-gray-700">Alpha Pokémon Hunt (Optional)</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="includeAlphas" class="block text-sm label-text mb-1">Include Alphas in hunt?</label>
-                        <select id="includeAlphas" class="form-select">
-                            <option value="no">No</option>
-                            <option value="yes">Yes</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="alphaHuntOptionsContainer" class="toggle-hidden space-y-4">
+                <!-- Advanced Options (Toggled) -->
+                <div id="advancedOptions" class="toggle-hidden border-t border-gray-700 pt-6 mt-6">
                     
-                    <div class="p-4 rounded-md" style="background-color: var(--bg-primary);">
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="includeStaticAlphas" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
-                            <span class="label-text text-base">Include Static Alphas?</span>
-                        </label>
-                        <div id="staticAlphaContainer" class="toggle-hidden mt-4">
-                            <label for="staticAlphaCount" class="block text-sm label-text mb-1">How many static Alphas in range?</label>
-                            <input type="number" id="staticAlphaCount" class="form-input" placeholder="e.g., 1">
+                    <!-- Specific Hunt -->
+                    <h3 class="text-lg font-semibold text-white mb-3">Specific Pokémon Hunt (Optional)</h3>
+                    <p class="text-base text-gray-400 mb-3">
+                        For specific Pokémon details, check Serebii <a href="https://www.serebii.net/pokearth/lumiosecity/" target="_blank" rel="noopener noreferrer" class="text-accent-primary hover:text-accent-secondary underline">here</a>.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="specificSpawns" class="block text-sm label-text mb-1">How Many Targeted Pokemon Spawns?</label>
+                            <input type="number" id="specificSpawns" class="form-input" placeholder="e.g., 3">
                         </div>
-                    </div>
-
-                    <div class="p-4 rounded-md" style="background-color: var(--bg-primary);">
-                        <label class="flex items-center space-x-2">
-                            <input type="checkbox" id="includeNonStaticAlphas" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
-                            <span class="label-text text-base">Include Non-Static Alphas?</span>
-                        </label>
-                        <div id="nonStaticAlphaContainer" class="toggle-hidden mt-4 space-y-4">
-                            <div>
-                                <label for="alphaEligibleSpawns" class="block text-sm label-text mb-1">Alpha Eligible Spawners</label>
-                                <input type="number" id="alphaEligibleSpawns" class="form-input" placeholder="Auto-filled">
-                                <p class="text-xs text-gray-500 mt-1">Auto-filled based on Total Spawns - Static Alphas.</p>
-                            </div>
-                            <div>
-                                <label for="nonStaticAlphaChance" class="block text-sm label-text mb-1">Non-Static Alpha Chance?</label>
-                                <select id="nonStaticAlphaChance" class="form-select">
-                                    <option value="0.05">5% Chance</option>
-                                    <option value="0.20">20% Chance</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="flex items-center space-x-2">
-                                    <input type="checkbox" id="specificShinyAlpha" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
-                                    <span class="label-text">Looking for a SPECIFIC Shiny Alpha?</span>
-                                </label>
-                                <p class="text-xs text-gray-500 ml-7">Uses info from "Specific Pokémon Hunt" section. (Applies to Non-Static only)</p>
+                        <div>
+                            <label for="spawnPercentMethod" class="block text-sm label-text mb-1">Spawn Table %?</label>
+                            <select id="spawnPercentMethod" class="form-select mb-2">
+                                <option value="" selected disabled>Select spawn type</option>
+                                <option value="isolated">Isolated (100%)</option>
+                                <option value="custom">Custom %</option>
+                            </select>
+                            <div id="customSpawnPercentContainer" class="toggle-hidden">
+                                <label for="spawnPercent" class="block text-sm label-text mb-1">Custom Spawn %?</label>
+                                <input type="number" id="spawnPercent" class="form-input" placeholder="e.g., 15">
                             </div>
                         </div>
                     </div>
-                </div>
+                    
+                    <div class="mb-4">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="dayNightLock" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
+                            <span class="label-text">Is this a Day/Night-locked spawn?</span>
+                        </label>
+                        <p class="text-xs text-gray-500 ml-7 mt-1">(Doubles Bench reset time for this specific calculation)</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="specificGender" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
+                            <span class="label-text">Specific Gender?</span>
+                        </label>
+                    </div>
+                    <div id="genderRateContainer" class="toggle-hidden mb-4 ml-7">
+                        <label for="genderRate" class="block text-sm label-text mb-1">Rate of Desired Gender (%)?</label>
+                        <input type="number" id="genderRate" class="form-input" value="50" placeholder="e.g., 50">
+                        <p class="text-xs text-gray-500 mt-1">e.g., 50% is Default. See Serebii to Double Check.</p>
+                    </div>
 
-                <!-- Time Loss -->
-                <h3 class="text-lg font-semibold text-white mb-3 mt-6 pt-4 border-t border-gray-700">Time Loss Factors (Optional)</h3>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div id="dayNightContainer">
-                        <label for="dayNightCycle" class="block text-sm label-text mb-1">Include Day/Night cinematics?</label>
-                        <select id="dayNightCycle" class="form-select">
-                            <option value="no">No</option>
-                            <option value="yes">Yes (Adds 12s per 24m)</option>
+                    <div class="mb-4">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" id="includeRespawnTime" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
+                            <span class="label-text">Include "Wrong Shiny" Respawn Time?</span>
+                        </label>
+                        <p class="text-xs text-yellow-400 ml-7 mt-1">NOT Recommended for Total AFK Hunts</p>
+                        <p id="respawnHelper" class="text-xs text-gray-500 ml-7 mt-1 toggle-hidden">(Disabled: Hunt has no "wrong shiny" condition)</p>
+                    </div>
+                    <div id="respawnTimeContainer" class="toggle-hidden mb-4 ml-7">
+                        <label for="spawnerRespawnTime" class="block text-sm label-text mb-1">Spawner Respawn Time (seconds)?</label>
+                        <input type="number" id="spawnerRespawnTime" class="form-input" placeholder="e.g., 150">
+                        <p class="text-xs text-gray-500 mt-1">Assumes a 1-minute "clear time" to catch/defeat the wrong shiny.</p>
+                    </div>
+
+                    <div class="mb-4 pt-4 border-t border-gray-700">
+                        <label for="oddballSpawns" class="block text-sm label-text mb-1">Oddball Spawns (Info Only)</label>
+                        <select id="oddballSpawns" class="form-select">
+                            <option value="" selected>Select an Oddball Spawn for info...</option>
+                            <option value="fossil">Tyrunt, Aerodactyl, Amaura</option>
+                            <option value="drampa">Drampa</option>
+                            <option value="goomy">Goomy/Sliggoo</option>
+                            <option value="riolu">Riolu</option>
+                            <option value="helioptile">Helioptile</option>
+                            <option value="skarmory">Skarmory</option>
+                            <option value="pumpkaboo">Pumpkaboo</option>
                         </select>
-                        <p id="dayNightHelper" class="text-xs text-gray-500 mt-1 toggle-hidden">(Disabled: Method includes or pauses time cycle)</p>
+                    </div>
+                    <div id="oddballExplainerBox" class="toggle-hidden mb-4 p-4 rounded-md bg-gray-800 border border-gray-700">
+                        <p id="oddballExplainerText" class="text-sm text-gray-300"></p>
+                    </div>
+
+                    <!-- Alpha Hunt -->
+                    <h3 class="text-lg font-semibold text-white mb-3 mt-6 pt-4 border-t border-gray-700">Alpha Pokémon Hunt (Optional)</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="includeAlphas" class="block text-sm label-text mb-1">Include Alphas in hunt?</label>
+                            <select id="includeAlphas" class="form-select">
+                                <option value="no">No</option>
+                                <option value="yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="alphaHuntOptionsContainer" class="toggle-hidden space-y-4">
+                        
+                        <div class="p-4 rounded-md" style="background-color: var(--bg-primary);">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeGuaranteedAlphas" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
+                                <span class="label-text text-base">Include Guaranteed Alphas?</span>
+                            </label>
+                            <div id="guaranteedAlphaContainer" class="toggle-hidden mt-4">
+                                <label for="guaranteedAlphaCount" class="block text-sm label-text mb-1">How many Guaranteed Alphas in range?</label>
+                                <input type="number" id="guaranteedAlphaCount" class="form-input" placeholder="e.g., 1">
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-md" style="background-color: var(--bg-primary);">
+                            <label class="flex items-center space-x-2">
+                                <input type="checkbox" id="includeNonGuaranteedAlphas" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
+                                <span class="label-text text-base">Include Non-Guaranteed Alphas?</span>
+                            </label>
+                            <div id="nonGuaranteedAlphaContainer" class="toggle-hidden mt-4 space-y-4">
+                                <div>
+                                    <label for="totalAlphaPotential" class="block text-sm label-text mb-1">Total Alpha Potential Spawns</label>
+                                    <input type="number" id="totalAlphaPotential" class="form-input read-only-display" placeholder="Auto-filled" readonly>
+                                    <p class="text-xs text-gray-500 mt-1">Auto-filled based on Total Spawns - Guaranteed Alphas.</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label for="nonStaticSpawns_0" class="block text-sm label-text mb-1">0% Alpha Chance</label>
+                                        <input type="number" id="nonStaticSpawns_0" class="form-input non-guaranteed-input" placeholder="e.g., 3" min="0">
+                                    </div>
+                                    <div>
+                                        <label for="nonStaticSpawns_5" class="block text-sm label-text mb-1">5% Alpha Chance</label>
+                                        <input type="number" id="nonStaticSpawns_5" class="form-input non-guaranteed-input" placeholder="e.g., 5" min="0">
+                                    </div>
+                                    <div>
+                                        <label for="nonStaticSpawns_20" class="block text-sm label-text mb-1">20% Alpha Chance</label>
+                                        <input type="number" id="nonStaticSpawns_20" class="form-input non-guaranteed-input" placeholder="e.g., 1" min="0">
+                                    </div>
+                                </div>
+                                <p id="nonGuaranteedAlphaError" class="text-red-500 text-sm toggle-hidden">Invalid: Total exceeds max "Alpha Potential" spawns.</p>
+
+                                <div>
+                                    <label class="flex items-center space-x-2 pt-4 border-t border-gray-700">
+                                        <input type="checkbox" id="specificShinyAlpha" class="form-checkbox h-5 w-5 rounded bg-gray-700 border-gray-600 text-accent-primary focus:ring-accent-secondary">
+                                        <span class="label-text">Looking for a SPECIFIC Shiny Alpha?</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 ml-7">Uses info from "Specific Pokémon Hunt" section. (Applies to Non-Guaranteed only)</p>
+                                </div>
+                                
+                                <div id="specificAlphaChanceContainer" class="toggle-hidden ml-7">
+                                    <label for="specificAlphaChance" class="block text-sm label-text mb-1">Alpha % of your specific target?</label>
+                                    <select id="specificAlphaChance" class="form-select">
+                                        <option value="0.05">5% Chance</option>
+                                        <option value="0.20">20% Chance</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Loss -->
+                    <h3 class="text-lg font-semibold text-white mb-3 mt-6 pt-4 border-t border-gray-700">Time Loss Factors (Optional)</h3>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div id="dayNightContainer">
+                            <label for="dayNightCycle" class="block text-sm label-text mb-1">Include Day/Night cinematics?</label>
+                            <select id="dayNightCycle" class="form-select">
+                                <option value="no">No</option>
+                                <option value="yes">Yes (Adds 12s per 24m)</option>
+                            </select>
+                            <p id="dayNightHelper" class="text-xs text-gray-500 mt-1 toggle-hidden">(Disabled: Method includes or pauses time cycle)</p>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Calculate Button -->
+                <button id="calculateBtn" class="btn-primary w-full mt-4">Calculate Hunt</button>
+                
+                <p class="text-center text-yellow-400 text-base mt-6">
+                    Want to support my work? Donate <a href="https://streamlabs.com/canadianguyeh/tip" target="_blank" rel="noopener noreferrer" class="text-accent-primary hover:text-accent-secondary underline">here</a>!
+                </p>
+
             </div>
-
-            <!-- Calculate Button -->
-            <button id="calculateBtn" class="btn-primary w-full mt-4">Calculate Hunt</button>
-            
-            <p class="text-center text-yellow-400 text-base mt-6">
-                Want to support my work? Donate <a href="https://streamlabs.com/canadianguyeh/tip" target="_blank" rel="noopener noreferrer" class="text-accent-primary hover:text-accent-secondary underline">here</a>!
-            </p>
-
         </div>
+        
+        <!-- NEW: Fossil Calculator -->
+        <div id="fossilCalculator" class="toggle-hidden">
+            <div class="bg-secondary p-4 sm:p-6 rounded-lg shadow-lg mb-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Fossil Hunt Calculator</h2>
+                <p class="text-sm text-gray-400 mb-4">
+                    For soft-resetting fossils. Shiny Charm does NOT apply (odds are 1/4096).
+                </p>
+                
+                <div class="mb-4">
+                    <label for="fossilsPerReset" class="block text-sm label-text mb-1">How many fossils per reset? <span class="required-star">*</span></label>
+                    <input type="number" id="fossilsPerReset" class="form-input" placeholder="e.g., 30 (1 box)">
+                </div>
+
+                <div class="mb-6 p-3 rounded-md bg-gray-800 border border-gray-700">
+                    <h4 class="font-semibold text-accent-primary">Pro-Tip: Finding the "Sweet Spot"</h4>
+                    <p class="text-sm text-gray-300 mt-1">
+                        To maximize your "Fossils per Minute," we recommend restoring a full box (30 fossils) or a full party (6 fossils) at a time. The more fossils you restore per loop, the more efficient your hunt will be!
+                    </p>
+                </div>
+
+                <!-- NEW: Fossil Timing Accordion -->
+                <div class="mb-6">
+                    <button class="accordion-toggle" id="fossilTimingToggle" aria-expanded="false">
+                        <span>Adjust Reset Timing (Optional)</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                          <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <div id="fossilTimingContainer" class="toggle-hidden mt-4 p-4 rounded-md" style="background-color: var(--bg-primary);">
+                        <p class="text-sm text-gray-400 mb-3">
+                            Override the default timings if your hardware is faster/slower.
+                        </p>
+                        <div class="space-y-3">
+                            <div>
+                                <label for="fossilFixedTime" class="block text-sm label-text mb-1">Fixed Time (sec)</label>
+                                <input type="number" id="fossilFixedTime" class="form-input" placeholder="Default: 30">
+                                <p class="text-xs text-gray-500 mt-1">"Time tax" for reload, menus, first check.</p>
+                            </div>
+                            <div>
+                                <label for="fossilScalingTime" class="block text-sm label-text mb-1">Time per Fossil (sec)</label>
+                                <input type="number" id="fossilScalingTime" class="form-input" placeholder="Default: 15">
+                                <p class="text-xs text-gray-500 mt-1">Additional time to restore & check each fossil.</p>
+                            </div>
+                            <div>
+                                <label for="fossilRestoreTime" class="block text-sm label-text mb-1">Restore-Only Time (sec)</label>
+                                <input type="number" id="fossilRestoreTime" class="form-input" placeholder="Default: 14.5">
+                                <p class="text-xs text-gray-500 mt-1">Used for AFK suggestion (restore-phase only).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- END: Fossil Timing Accordion -->
+
+                <button id="calculateFossilBtn" class="btn-primary w-full">Calculate Fossil Hunt</button>
+                
+                <p class="text-center text-yellow-400 text-base mt-6">
+                    Want to support my work? Donate <a href="https://streamlabs.com/canadianguyeh/tip" target="_blank" rel="noopener noreferrer" class="text-accent-primary hover:text-accent-secondary underline">here</a>!
+                </p>
+            </div>
+        </div>
+
 
         <!-- Error Area -->
         <div id="errorArea" class="hidden p-4 bg-red-800 border border-error-primary text-white rounded-lg mb-6">
@@ -359,7 +488,6 @@
                 <p id="afkSuggestionText" class="text-gray-200"></p>
             </div>
             
-            <!-- NEW: Reverse Probability Calculator -->
             <div id="reverseProbabilityBox" class="hidden p-4 rounded-lg mt-6 bg-secondary border border-tertiary">
                 <h3 class="text-lg font-semibold text-white mb-3">Have limited time?</h3>
                 <p class="text-gray-400 mb-4">Input your time and we'll tell you the chances of getting your target!</p>
@@ -391,6 +519,11 @@
         // --- Element Grabbing ---
         const simpleBtn = document.getElementById('simpleBtn');
         const advancedBtn = document.getElementById('advancedBtn');
+        const fossilBtn = document.getElementById('fossilBtn');
+        
+        const simpleAdvancedCalculator = document.getElementById('simpleAdvancedCalculator');
+        const fossilCalculator = document.getElementById('fossilCalculator');
+        
         const advancedOptions = document.getElementById('advancedOptions');
 
         const resetMethod = document.getElementById('resetMethod');
@@ -409,25 +542,35 @@
 
         const includeAlphas = document.getElementById('includeAlphas');
         const alphaHuntOptionsContainer = document.getElementById('alphaHuntOptionsContainer');
-        const includeStaticAlphas = document.getElementById('includeStaticAlphas');
-        const staticAlphaContainer = document.getElementById('staticAlphaContainer');
-        const staticAlphaCount = document.getElementById('staticAlphaCount');
-        const includeNonStaticAlphas = document.getElementById('includeNonStaticAlphas');
-        const nonStaticAlphaContainer = document.getElementById('nonStaticAlphaContainer');
-        const alphaEligibleSpawns = document.getElementById('alphaEligibleSpawns');
+        const includeGuaranteedAlphas = document.getElementById('includeGuaranteedAlphas');
+        const guaranteedAlphaContainer = document.getElementById('guaranteedAlphaContainer');
+        const guaranteedAlphaCount = document.getElementById('guaranteedAlphaCount');
+        const includeNonGuaranteedAlphas = document.getElementById('includeNonGuaranteedAlphas');
+        const nonGuaranteedAlphaContainer = document.getElementById('nonGuaranteedAlphaContainer');
         const totalSpawnsInput = document.getElementById('totalSpawns');
+        
+        const totalAlphaPotential = document.getElementById('totalAlphaPotential');
+        const nonStaticSpawns_0 = document.getElementById('nonStaticSpawns_0');
+        const nonStaticSpawns_5 = document.getElementById('nonStaticSpawns_5');
+        const nonStaticSpawns_20 = document.getElementById('nonStaticSpawns_20');
+        const nonGuaranteedAlphaError = document.getElementById('nonGuaranteedAlphaError');
+        const nonGuaranteedInputs = document.querySelectorAll('.non-guaranteed-input');
+        
+        const specificShinyAlpha = document.getElementById('specificShinyAlpha');
+        const specificAlphaChanceContainer = document.getElementById('specificAlphaChanceContainer');
         
         const dayNightCycle = document.getElementById('dayNightCycle');
         const dayNightHelper = document.getElementById('dayNightHelper');
         
         const calculateBtn = document.getElementById('calculateBtn');
+        const calculateFossilBtn = document.getElementById('calculateFossilBtn');
+        
         const resultsArea = document.getElementById('resultsArea');
         const resultsContainer = document.getElementById('resultsContainer');
         const errorArea = document.getElementById('errorArea');
         const afkSuggestionBox = document.getElementById('afkSuggestionBox');
         const afkSuggestionText = document.getElementById('afkSuggestionText');
         
-        // NEW: Reverse Probability Elements
         const reverseProbabilityBox = document.getElementById('reverseProbabilityBox');
         const probTimeBtn = document.getElementById('probTimeBtn');
         const probTimeHours = document.getElementById('probTimeHours');
@@ -435,29 +578,74 @@
         const probTimeError = document.getElementById('probTimeError');
         const probTimeResults = document.getElementById('probTimeResults');
 
+        const oddballSpawns = document.getElementById('oddballSpawns');
+        const oddballExplainerBox = document.getElementById('oddballExplainerBox');
+        const oddballExplainerText = document.getElementById('oddballExplainerText');
+        
+        // NEW: Fossil Timing Elements
+        const fossilTimingToggle = document.getElementById('fossilTimingToggle');
+        const fossilTimingContainer = document.getElementById('fossilTimingContainer');
+        const fossilFixedTime = document.getElementById('fossilFixedTime');
+        const fossilScalingTime = document.getElementById('fossilScalingTime');
+        const fossilRestoreTime = document.getElementById('fossilRestoreTime');
+
+        const oddballInfo = {
+            "fossil": "Tyrunt, Aerodactyl, Amaura - These are Fossil Pokémon. Please Use the Fossil Tab.",
+            "drampa": "Drampa - Drampa can be shiny hunted, however, it spawns in Wild Zone 19 and only during the early morning. There's no way to be able to calculate the time for the hunt consistently as it would require a system reset part way through the hunt. There are also no benches nearby so that can't be used either. Overall, while the hunt is of course not impossible, this calculator may not be the best use for this hunt.",
+            "goomy": "Goomy/Sliggoo - These Pokémon only spawn when it is raining. Your best bet is to Bench until it rains in your game, find your spawn, and use either a custom or fast travel method. I don't suggest a total afk hunt for this one. If a shiny does spawn, and you miss it, you won't know until it rains again. Calculator is still useable, but requires attention.",
+            "riolu": "Riolu - This Pokémon Only Spawns during Intense Sun. Your best bet is to Bench until it is Very Sunny, find your spawn, and use either a custom or fast travel method. I don't suggest a total afk hunt for this one. If a shiny does spawn, and you miss it, you won't know until it's very sunny again. Calculator is still useable, but requires attention.",
+            "helioptile": "Helioptile - This Pokémon Only Spawns during Intense Sun. Your best bet is to Bench until it is Very Sunny, find your spawn, and use either a custom or fast travel method. I don't suggest a total afk hunt for this one. If a shiny does spawn, and you miss it, you won't know until it's very sunny again. Calculator is still useable, but requires attention.",
+            "skarmory": "Skarmory - This pokemon is still very valid for the calculator. However, if it rains in game, the pokemon will not spawn. So timing maybe be inconclusive in our estimates.",
+            "pumpkaboo": "Pumpkaboo - Pumpkaboo is handled very oddly. Due to its size variants between day and night it for some reason doesn't save properly to the shiny stash if you switch from day to night or night to day. the Calculator can still be a help, but DO NOT BENCH and dont do this AFK. Strictly custom or fast travel."
+        };
 
         // --- UI Toggles ---
 
         simpleBtn.addEventListener('click', () => {
+            simpleAdvancedCalculator.classList.remove('toggle-hidden');
+            fossilCalculator.classList.add('toggle-hidden');
+
             advancedOptions.classList.add('toggle-hidden');
             simpleBtn.classList.add('toggle-btn-active');
             simpleBtn.classList.remove('toggle-btn-inactive');
             advancedBtn.classList.add('toggle-btn-inactive');
             advancedBtn.classList.remove('toggle-btn-active');
-            
+            fossilBtn.classList.add('toggle-btn-inactive');
+            fossilBtn.classList.remove('toggle-btn-active');
+
             clearResults();
             resetAdvancedFields();
         });
 
         advancedBtn.addEventListener('click', () => {
+            simpleAdvancedCalculator.classList.remove('toggle-hidden');
+            fossilCalculator.classList.add('toggle-hidden');
+
             advancedOptions.classList.remove('toggle-hidden');
             advancedBtn.classList.add('toggle-btn-active');
             advancedBtn.classList.remove('toggle-btn-inactive');
             simpleBtn.classList.add('toggle-btn-inactive');
             simpleBtn.classList.remove('toggle-btn-active');
+            fossilBtn.classList.add('toggle-btn-inactive');
+            fossilBtn.classList.remove('toggle-btn-active');
             
             clearResults();
         });
+
+        fossilBtn.addEventListener('click', () => {
+            simpleAdvancedCalculator.classList.add('toggle-hidden');
+            fossilCalculator.classList.remove('toggle-hidden');
+
+            fossilBtn.classList.add('toggle-btn-active');
+            fossilBtn.classList.remove('toggle-btn-inactive');
+            simpleBtn.classList.add('toggle-btn-inactive');
+            simpleBtn.classList.remove('toggle-btn-active');
+            advancedBtn.classList.add('toggle-btn-inactive');
+            advancedBtn.classList.remove('toggle-btn-active');
+            
+            clearResults();
+        });
+
 
         resetMethod.addEventListener('change', () => {
             if (resetMethod.value === 'custom') {
@@ -476,84 +664,13 @@
             }
         });
 
-        function updateRespawnTimeStatus() {
-            const isIsolated = spawnPercentMethod.value === 'isolated';
-            const isGenderLocked = specificGender.checked;
-
-            if (isIsolated && !isGenderLocked) {
-                includeRespawnTime.checked = false;
-                includeRespawnTime.disabled = true;
-                respawnHelper.classList.remove('toggle-hidden');
-                includeRespawnTime.dispatchEvent(new Event('change'));
+        oddballSpawns.addEventListener('change', () => {
+            const selectedValue = oddballSpawns.value;
+            if (selectedValue && oddballInfo[selectedValue]) {
+                oddballExplainerText.textContent = oddballInfo[selectedValue];
+                oddballExplainerBox.classList.remove('toggle-hidden');
             } else {
-                includeRespawnTime.disabled = false;
-                respawnHelper.classList.add('toggle-hidden');
-            }
-        }
-
-        spawnPercentMethod.addEventListener('change', () => {
-            if (spawnPercentMethod.value === 'custom') {
-                customSpawnPercentContainer.classList.remove('toggle-hidden');
-            } else {
-                customSpawnPercentContainer.classList.add('toggle-hidden');
-            }
-            updateRespawnTimeStatus();
-        });
-
-        specificGender.addEventListener('change', () => {
-            if (specificGender.checked) {
-                genderRateContainer.classList.remove('toggle-hidden');
-            } else {
-                genderRateContainer.classList.add('toggle-hidden');
-            }
-            updateRespawnTimeStatus();
-        });
-
-        includeAlphas.addEventListener('change', () => {
-            if (includeAlphas.value === 'yes') {
-                alphaHuntOptionsContainer.classList.remove('toggle-hidden');
-                includeStaticAlphas.dispatchEvent(new Event('change'));
-                includeNonStaticAlphas.dispatchEvent(new Event('change'));
-                updateAlphaEligibleSpawns();
-            } else {
-                alphaHuntOptionsContainer.classList.add('toggle-hidden');
-            }
-        });
-
-        includeStaticAlphas.addEventListener('change', () => {
-            if (includeStaticAlphas.checked) {
-                staticAlphaContainer.classList.remove('toggle-hidden');
-            } else {
-                staticAlphaContainer.classList.add('toggle-hidden');
-            }
-            updateAlphaEligibleSpawns();
-        });
-
-        includeNonStaticAlphas.addEventListener('change', () => {
-            if (includeNonStaticAlphas.checked) {
-                nonStaticAlphaContainer.classList.remove('toggle-hidden');
-            } else {
-                nonStaticAlphaContainer.classList.add('toggle-hidden');
-            }
-        });
-        
-        function updateAlphaEligibleSpawns() {
-            const total = parseFloat(totalSpawnsInput.value) || 0;
-            const staticCount = includeStaticAlphas.checked ? (parseFloat(staticAlphaCount.value) || 0) : 0;
-            const eligible = Math.max(0, total - staticCount);
-            alphaEligibleSpawns.value = eligible;
-        }
-
-        totalSpawnsInput.addEventListener('keyup', updateAlphaEligibleSpawns);
-        totalSpawnsInput.addEventListener('change', updateAlphaEligibleSpawns);
-        staticAlphaCount.addEventListener('keyup', updateAlphaEligibleSpawns);
-        staticAlphaCount.addEventListener('change', updateAlphaEligibleSpawns);
-
-        includeRespawnTime.addEventListener('change', () => {
-            if (includeRespawnTime.checked && !includeRespawnTime.disabled) {
-                respawnTimeContainer.classList.remove('toggle-hidden');
-            } else {
-                respawnTimeContainer.classList.add('toggle-hidden');
+                oddballExplainerBox.classList.add('toggle-hidden');
             }
         });
 
@@ -574,37 +691,54 @@
                 }
             }
         });
-
-        // --- Calculation ---
         
-        function calculateCappedExpectedValue(trials, prob, max) {
-            if (trials <= 0 || prob <= 0) return 0;
-            let expectedValue = 0;
-            let probSum = 0;
-            for (let k = 0; k < max; k++) {
-                const prob_k = binomialProbability(trials, prob, k);
-                expectedValue += k * prob_k;
-                probSum += prob_k;
+        spawnPercentMethod.addEventListener('change', () => {
+            if (spawnPercentMethod.value === 'custom') {
+                customSpawnPercentContainer.classList.remove('toggle-hidden');
+            } else {
+                customSpawnPercentContainer.classList.add('toggle-hidden');
             }
-            const prob_max_or_more = 1.0 - probSum;
-            expectedValue += max * prob_max_or_more;
-            return expectedValue;
-        }
-
-        function binomialProbability(n, p, k) {
-            return nCr(n, k) * Math.pow(p, k) * Math.pow(1.0 - p, n - k);
-        }
-
-        function nCr(n, r) {
-            if (r < 0 || r > n) return 0;
-            if (r === 0 || r === n) return 1;
-            if (r > n / 2) r = n - r;
-            let res = 1;
-            for (let k = 1; k <= r; k++) {
-                res = res * (n - k + 1) / k;
+            updateRespawnTimeStatus();
+        });
+        
+        specificGender.addEventListener('change', () => {
+            if (specificGender.checked) {
+                genderRateContainer.classList.remove('toggle-hidden');
+            } else {
+                genderRateContainer.classList.add('toggle-hidden');
             }
-            return res;
+            updateRespawnTimeStatus();
+        });
+
+        includeRespawnTime.addEventListener('change', () => {
+            if (includeRespawnTime.checked) {
+                respawnTimeContainer.classList.remove('toggle-hidden');
+            } else {
+                respawnTimeContainer.classList.add('toggle-hidden');
+            }
+        });
+        
+        function updateRespawnTimeStatus() {
+            const isIsolated = spawnPercentMethod.value === 'isolated';
+            const isGenderLocked = specificGender.checked;
+            
+            const noWrongShinies = isIsolated && !isGenderLocked;
+            
+            if (noWrongShinies) {
+                includeRespawnTime.checked = false;
+                includeRespawnTime.disabled = true;
+                respawnHelper.classList.remove('toggle-hidden');
+            } else {
+                includeRespawnTime.disabled = false;
+                respawnHelper.classList.add('toggle-hidden');
+            }
+            
+            if (!includeRespawnTime.checked) {
+                respawnTimeContainer.classList.add('toggle-hidden');
+            }
         }
+        
+        // --- Calculation ---
         
         calculateBtn.addEventListener('click', () => {
             clearResults();
@@ -651,18 +785,28 @@
             const clearTime = 60;
 
             const doAlphaHunt = document.getElementById('includeAlphas').value === 'yes';
-            const doIncludeStaticAlphas = document.getElementById('includeStaticAlphas').checked;
-            const staticAlphaCount = doIncludeStaticAlphas ? (parseFloat(document.getElementById('staticAlphaCount').value) || 0) : 0;
-            const doIncludeNonStaticAlphas = document.getElementById('includeNonStaticAlphas').checked;
-            const eligibleSpawns = parseFloat(document.getElementById('alphaEligibleSpawns').value) || 0;
-            const nonStaticAlphaChance = parseFloat(document.getElementById('nonStaticAlphaChance').value);
+            const doIncludeGuaranteedAlphas = document.getElementById('includeGuaranteedAlphas').checked;
+            const guaranteedAlphaCountVal = doIncludeGuaranteedAlphas ? (parseFloat(document.getElementById('guaranteedAlphaCount').value) || 0) : 0;
+            const doIncludeNonGuaranteedAlphas = document.getElementById('includeNonGuaranteedAlphas').checked;
+            
+            const spawns_0 = parseFloat(nonStaticSpawns_0.value) || 0;
+            const spawns_5 = parseFloat(nonStaticSpawns_5.value) || 0;
+            const spawns_20 = parseFloat(nonStaticSpawns_20.value) || 0;
+            
             const specificShinyAlpha = document.getElementById('specificShinyAlpha').checked;
+            const specificAlphaChance = parseFloat(document.getElementById('specificAlphaChance').value) || 0; // For Trifecta
 
             const includeDayNight = document.getElementById('dayNightCycle').value === 'yes';
 
             // --- Validation ---
             if (isNaN(totalSpawns) || isNaN(baseResetTime) || totalSpawns <= 0 || baseResetTime <= 0) {
                 errorArea.innerHTML = 'Please fill out all required fields (*) with numbers greater than 0.';
+                errorArea.classList.remove('hidden');
+                return;
+            }
+
+            if (doAlphaHunt && doIncludeNonGuaranteedAlphas && !validateNonStaticSpawns()) {
+                errorArea.innerHTML = 'Non-Guaranteed Alpha spawns exceed the total available. Please check your numbers.';
                 errorArea.classList.remove('hidden');
                 return;
             }
@@ -753,30 +897,32 @@
             }
 
             // 3. Alpha Hunt
-            if (doAlphaHunt && (doIncludeStaticAlphas || doIncludeNonStaticAlphas)) {
+            if (doAlphaHunt && (doIncludeGuaranteedAlphas || doIncludeNonGuaranteedAlphas)) {
                 
                 let totalExpectedAlphas = 0;
                 let subtitleParts = [];
 
-                if (doIncludeStaticAlphas && staticAlphaCount > 0) {
-                    totalExpectedAlphas += staticAlphaCount;
-                    subtitleParts.push(`${staticAlphaCount} static`);
+                if (doIncludeGuaranteedAlphas && guaranteedAlphaCountVal > 0) {
+                    totalExpectedAlphas += guaranteedAlphaCountVal;
+                    subtitleParts.push(`${guaranteedAlphaCountVal} guaranteed`);
                     
-                    const calc_static_only = runCalc(staticAlphaCount, baseOdds, baseResetTime);
+                    const calc_static_only = runCalc(guaranteedAlphaCountVal, baseOdds, baseResetTime);
                     if (calc_static_only.totalSeconds > 0) {
                         displayResult(
-                            'Avg. Time for STATIC Shiny Alphas',
+                            'Avg. Time for GUARANTEED Shiny Alphas',
                             calc_static_only.avgResets,
                             calc_static_only.totalSeconds,
-                            `Based on ${staticAlphaCount} static spawner(s) only`
+                            `Based on ${guaranteedAlphaCountVal} guaranteed spawner(s) only`
                         );
                     }
                 }
                 
-                if (doIncludeNonStaticAlphas && eligibleSpawns > 0) {
-                    const expectedNonStatic = calculateCappedExpectedValue(eligibleSpawns, nonStaticAlphaChance, 2);
-                    totalExpectedAlphas += expectedNonStatic;
-                    subtitleParts.push(`${expectedNonStatic.toFixed(2)} avg non-static`);
+                if (doIncludeNonGuaranteedAlphas) {
+                    const expectedNonStatic = (spawns_5 * 0.05) + (spawns_20 * 0.20);
+                    if (expectedNonStatic > 0) {
+                        totalExpectedAlphas += expectedNonStatic;
+                        subtitleParts.push(`${expectedNonStatic.toFixed(2)} avg non-guaranteed`);
+                    }
                 }
 
                 if (totalExpectedAlphas > 0) {
@@ -792,12 +938,12 @@
                 }
                 
                 // 4. Specific Shiny Alpha (Trifecta)
-                if (doIncludeNonStaticAlphas && specificShinyAlpha && specificSpawns > 0 && spawnPercent > 0) {
+                if (doIncludeNonGuaranteedAlphas && specificShinyAlpha && specificSpawns > 0 && spawnPercent > 0 && specificAlphaChance > 0) {
                     
                     let specificResetTime_trifecta = baseResetTime;
-                    let specificSubtitle_trifecta = `The "Trifecta": ${Math.min(specificSpawns, eligibleSpawns)} spawners, ${spawnPercent}% spawn, ${nonStaticAlphaChance * 100}% Alpha${genderSubtitle}`;
+                    let specificSubtitle_trifecta = `The "Trifecta": ${specificSpawns} spawners, ${spawnPercent}% spawn, ${specificAlphaChance * 100}% Alpha${genderSubtitle}`;
                     if (spawnPercentMethodValue === 'isolated') {
-                        specificSubtitle_trifecta = `The "Trifecta": ${Math.min(specificSpawns, eligibleSpawns)} isolated spawners, ${nonStaticAlphaChance * 100}% Alpha${genderSubtitle}`;
+                        specificSubtitle_trifecta = `The "Trifecta": ${specificSpawns} isolated spawners, ${specificAlphaChance * 100}% Alpha${genderSubtitle}`;
                     }
 
                     if (isDayNightLocked && resetMethodValue === 'bench') {
@@ -805,11 +951,11 @@
                         specificSubtitle_trifecta += ` (38s reset)`;
                     }
 
-                    const trifectaSpawns = Math.min(specificSpawns, eligibleSpawns);
+                    const trifectaSpawns = specificSpawns;
                     if (trifectaSpawns > 0) {
                         const spawnRate = spawnPercent / 100.0;
                         
-                        const probPerSpawner_trifecta = (1.0 / baseOdds) * spawnRate * nonStaticAlphaChance * genderMultiplier;
+                        const probPerSpawner_trifecta = (1.0 / baseOdds) * spawnRate * specificAlphaChance * genderMultiplier;
                         const totalChancePerReset_trifecta = probPerSpawner_trifecta * trifectaSpawns;
                         
                         if (totalChancePerReset_trifecta > 0) {
@@ -821,13 +967,11 @@
                             let subtitle = specificSubtitle_trifecta;
 
                             if (includeRespawn && !includeRespawnTime.disabled && spawnerRespawnTime > 0) {
-                                const probTrifectaTarget = spawnRate * nonStaticAlphaChance * genderMultiplier;
+                                const probTrifectaTarget = spawnRate * specificAlphaChance * genderMultiplier;
                                 
                                 let probTrfiectaWrong;
                                 if (spawnPercentMethodValue === 'isolated') {
-                                    // OLD: probTrfiectaWrong = spawnRate * nonStaticAlphaChance * (1.0 - genderMultiplier);
-                                    // NEW FIX: The "wrong" is anything BUT the target. Target is P(Alpha * Gender). Wrong is P(1 - (Alpha * Gender))
-                                    probTrfiectaWrong = 1.0 - (nonStaticAlphaChance * genderMultiplier);
+                                    probTrfiectaWrong = 1.0 - (specificAlphaChance * genderMultiplier);
                                 } else {
                                     probTrfiectaWrong = 1.0 - probTrifectaTarget;
                                 }
@@ -896,10 +1040,106 @@
                 afkSuggestionBox.classList.remove('hidden');
             }
             
-            // NEW: Show the reverse probability box
             reverseProbabilityBox.classList.remove('hidden');
 
         });
+
+        // --- FOSSIL CALCULATOR ---
+        calculateFossilBtn.addEventListener('click', () => {
+            clearResults();
+            calculatedAverages = {}; // Reset global store
+
+            const fossilsPerReset = parseFloat(document.getElementById('fossilsPerReset').value);
+
+            if (isNaN(fossilsPerReset) || fossilsPerReset <= 0) {
+                errorArea.innerHTML = 'Please enter a number of fossils greater than 0.';
+                errorArea.classList.remove('hidden');
+                return;
+            }
+
+            resultsArea.classList.remove('hidden');
+
+            // --- Get Custom Timings (or defaults) ---
+            const fixedTime = parseFloat(fossilFixedTime.value) || 30;
+            const scalingTime = parseFloat(fossilScalingTime.value) || 15;
+            const restoreTime = parseFloat(fossilRestoreTime.value) || 14.5;
+
+            // --- Fossil Calculations ---
+            const SHINY_ODDS = 4096;
+            const ALPHA_ODDS = 100;
+            const SHINY_ALPHA_ODDS = 409600;
+
+            // Core Formula: 30s fixed tax + 15s per fossil
+            const totalLoopTime = fixedTime + (scalingTime * fossilsPerReset);
+            const fossilsPerMin = (fossilsPerReset / totalLoopTime) * 60;
+
+            const avgLoopsShiny = SHINY_ODDS / fossilsPerReset;
+            const totalSecondsShiny = avgLoopsShiny * totalLoopTime;
+
+            const avgLoopsAlpha = ALPHA_ODDS / fossilsPerReset;
+            const totalSecondsAlpha = avgLoopsAlpha * totalLoopTime;
+
+            const avgLoopsShinyAlpha = SHINY_ALPHA_ODDS / fossilsPerReset;
+            const totalSecondsShinyAlpha = avgLoopsShinyAlpha * totalLoopTime;
+
+            // --- Display Results ---
+
+            // 1. Efficiency
+            const fossilsPerMinCard = `
+                <div class="result-card p-4">
+                    <span class="result-title">Hunt Efficiency</span>
+                    <div class="result-time" style="font-size: 1.5rem; margin-top: 0.5rem;">
+                        ${fossilsPerMin.toFixed(2)} Fossils per Minute
+                    </div>
+                </div>`;
+            resultsContainer.innerHTML += fossilsPerMinCard;
+
+            // 2. Shiny
+            displayResult(
+                'Avg. Time for SHINY Fossil',
+                avgLoopsShiny,
+                totalSecondsShiny,
+                `Based on ${fossilsPerReset} fossils per reset @ 1/4096`
+            );
+
+            // 3. Alpha
+            displayResult(
+                'Avg. Time for ALPHA Fossil',
+                avgLoopsAlpha,
+                totalSecondsAlpha,
+                `Based on ${fossilsPerReset} fossils per reset @ 1/100`
+            );
+
+            // 4. Shiny Alpha
+            displayResult(
+                'Avg. Time for SHINY ALPHA Fossil',
+                avgLoopsShinyAlpha,
+                totalSecondsShinyAlpha,
+                `Based on ${fossilsPerReset} fossils per reset @ 1/409,600`
+            );
+
+            // 5. AFK Suggestion
+            // Use the 14.5s * N restore phase time for this suggestion
+            const afkRestoreTime = restoreTime * fossilsPerReset; 
+            const afkTime = formatTime(afkRestoreTime);
+            afkSuggestionText.innerHTML = `With ${fossilsPerReset} fossils, your restore phase (mashing 'A') will take approximately <strong>${afkTime.hours}h ${afkTime.minutes}m ${afkTime.seconds}s</strong>. You should check in after this time to start your box check.`;
+            afkSuggestionBox.classList.remove('hidden');
+            
+            reverseProbabilityBox.classList.remove('hidden');
+        });
+
+        // NEW: Fossil Timing Toggle Listener
+        fossilTimingToggle.addEventListener('click', () => {
+            const isExpanded = fossilTimingToggle.getAttribute('aria-expanded') === 'true';
+            if (isExpanded) {
+                fossilTimingContainer.classList.add('toggle-hidden');
+                fossilTimingToggle.setAttribute('aria-expanded', 'false');
+            } else {
+                fossilTimingContainer.classList.remove('toggle-hidden');
+                fossilTimingToggle.setAttribute('aria-expanded', 'true');
+            }
+        });
+
         
         function formatTime(totalSeconds) {
             const hours = Math.floor(totalSeconds / 3600);
@@ -957,11 +1197,13 @@
         }
 
         function displayResult(title, avgResets, totalSeconds, subtitle = '') {
+            // Day/Night loss only applies to the main calculator
             const includeDayNight = document.getElementById('dayNightCycle').value === 'yes';
             let finalSeconds = totalSeconds;
             let timeLossText = '';
 
-            if (includeDayNight && !dayNightCycle.disabled) {
+            // Check if the dayNightCycle element is visible/relevant
+            if (simpleAdvancedCalculator.contains(dayNightCycle) && includeDayNight && !dayNightCycle.disabled) {
                  const loss = applyDayNightLoss(totalSeconds);
                  finalSeconds = totalSeconds + loss;
                  const lossTime = formatTime(loss);
@@ -971,7 +1213,6 @@
             const time = formatTime(finalSeconds);
             const resets = Math.round(avgResets).toLocaleString();
             
-            // NEW: Store the final average time for the reverse calc
             calculatedAverages[title] = finalSeconds;
             
             const uniqueId = title.replace(/\s+/g, '-') + '-' + Math.floor(avgResets);
@@ -1007,7 +1248,6 @@
             afkSuggestionBox.classList.add('hidden');
             afkSuggestionText.innerHTML = '';
             
-            // NEW: Clear reverse probability box
             reverseProbabilityBox.classList.add('hidden');
             probTimeResults.innerHTML = '';
             probTimeError.textContent = '';
@@ -1034,15 +1274,24 @@
             
             updateRespawnTimeStatus();
 
+            oddballSpawns.value = '';
+            oddballExplainerBox.classList.add('toggle-hidden');
+
             // Alpha Hunt
             document.getElementById('includeAlphas').value = 'no';
-            document.getElementById('includeStaticAlphas').checked = false;
-            document.getElementById('staticAlphaCount').value = '';
-            document.getElementById('includeNonStaticAlphas').checked = false;
-            document.getElementById('alphaEligibleSpawns').value = '';
-            document.getElementById('nonStaticAlphaChance').value = '0.05';
+            document.getElementById('includeGuaranteedAlphas').checked = false;
+            document.getElementById('guaranteedAlphaCount').value = '';
+            document.getElementById('includeNonGuaranteedAlphas').checked = false;
+            
+            document.getElementById('totalAlphaPotential').value = '';
+            document.getElementById('nonStaticSpawns_0').value = '';
+            document.getElementById('nonStaticSpawns_5').value = '';
+            document.getElementById('nonStaticSpawns_20').value = '';
+            
             document.getElementById('specificShinyAlpha').checked = false;
+            document.getElementById('specificAlphaChance').value = '0.05';
             includeAlphas.dispatchEvent(new Event('change'));
+            specificShinyAlpha.dispatchEvent(new Event('change'));
             
             // Time Loss
             dayNightCycle.value = 'no';
@@ -1052,7 +1301,79 @@
             resetMethod.dispatchEvent(new Event('change'));
         }
         
-        // NEW: Event Listener for Reverse Probability Calculator
+        // --- Alpha Hunt UI Logic ---
+        
+        includeAlphas.addEventListener('change', () => {
+            if (includeAlphas.value === 'yes') {
+                alphaHuntOptionsContainer.classList.remove('toggle-hidden');
+                includeGuaranteedAlphas.dispatchEvent(new Event('change'));
+                includeNonGuaranteedAlphas.dispatchEvent(new Event('change'));
+                updateAlphaPotential();
+            } else {
+                alphaHuntOptionsContainer.classList.add('toggle-hidden');
+            }
+        });
+
+        includeGuaranteedAlphas.addEventListener('change', () => {
+            if (includeGuaranteedAlphas.checked) {
+                guaranteedAlphaContainer.classList.remove('toggle-hidden');
+            } else {
+                guaranteedAlphaContainer.classList.add('toggle-hidden');
+            }
+            updateAlphaPotential();
+        });
+
+        includeNonGuaranteedAlphas.addEventListener('change', () => {
+            if (includeNonGuaranteedAlphas.checked) {
+                nonGuaranteedAlphaContainer.classList.remove('toggle-hidden');
+            } else {
+                nonGuaranteedAlphaContainer.classList.add('toggle-hidden');
+            }
+        });
+        
+        function updateAlphaPotential() {
+            const total = parseFloat(totalSpawnsInput.value) || 0;
+            const staticCount = includeGuaranteedAlphas.checked ? (parseFloat(guaranteedAlphaCount.value) || 0) : 0;
+            const eligible = Math.max(0, total - staticCount);
+            totalAlphaPotential.value = eligible;
+            validateNonStaticSpawns();
+        }
+
+        function validateNonStaticSpawns() {
+            const potential = parseFloat(totalAlphaPotential.value) || 0;
+            const s0 = parseFloat(nonStaticSpawns_0.value) || 0;
+            const s5 = parseFloat(nonStaticSpawns_5.value) || 0;
+            const s20 = parseFloat(nonStaticSpawns_20.value) || 0;
+            const total = s0 + s5 + s20;
+
+            if (total > potential) {
+                nonGuaranteedAlphaError.classList.remove('toggle-hidden');
+                return false;
+            } else {
+                nonGuaranteedAlphaError.classList.add('toggle-hidden');
+                return true;
+            }
+        }
+
+        totalSpawnsInput.addEventListener('keyup', updateAlphaPotential);
+        totalSpawnsInput.addEventListener('change', updateAlphaPotential);
+        guaranteedAlphaCount.addEventListener('keyup', updateAlphaPotential);
+        guaranteedAlphaCount.addEventListener('change', updateAlphaPotential);
+        nonGuaranteedInputs.forEach(input => {
+            input.addEventListener('keyup', validateNonStaticSpawns);
+            input.addEventListener('change', validateNonStaticSpawns);
+        });
+        
+        specificShinyAlpha.addEventListener('change', () => {
+            if (specificShinyAlpha.checked) {
+                specificAlphaChanceContainer.classList.remove('toggle-hidden');
+            } else {
+                specificAlphaChanceContainer.classList.add('toggle-hidden');
+            }
+        });
+        
+        // --- END Alpha Hunt UI Logic ---
+        
         probTimeBtn.addEventListener('click', () => {
             const hours = parseInt(probTimeHours.value) || 0;
             const minutes = parseInt(probTimeMinutes.value) || 0;
@@ -1071,18 +1392,16 @@
 
             const totalInputSeconds = (hours * 3600) + (minutes * 60);
             if (totalInputSeconds <= 0) {
-                return; // Don't show anything if time is zero
+                return; 
             }
 
             let resultsHTML = '<ul class="text-sm">';
             for (const title in calculatedAverages) {
                 const avgSeconds = calculatedAverages[title];
                 if (avgSeconds > 0) {
-                    // Formula: P(t) = 1 - e^(-t / T_avg)
                     const probability = 1 - Math.exp(-totalInputSeconds / avgSeconds);
                     let probabilityPercent = (probability * 100);
                     
-                    // NEW: Cap the percentage at 99.99%
                     if (probabilityPercent > 99.99) {
                         probabilityPercent = 99.99;
                     }
